@@ -1,0 +1,40 @@
+{
+  "unique_name": "ldo_pmos_v1_auto",
+  "children": [
+    {
+      "unique_name": "Bias Network",
+      "children": [
+        {
+          "unique_name": "bias_reference_mirror",
+          "children": []
+        }
+      ]
+    },
+    {
+      "unique_name": "LDO Regulation Loop",
+      "children": [
+        {
+          "unique_name": "Error Amplifier Chain",
+          "children": [
+            {
+              "unique_name": "error_amplifier_input_stage",
+              "children": []
+            },
+            {
+              "unique_name": "second_gain_stage",
+              "children": []
+            }
+          ]
+        },
+        {
+          "unique_name": "pass_device_output_feedback",
+          "children": []
+        },
+        {
+          "unique_name": "miller_compensation",
+          "children": []
+        }
+      ]
+    }
+  ]
+}

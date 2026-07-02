@@ -1,0 +1,123 @@
+{
+  "top_level_port_names": [
+    "gnd",
+    "iref_snk",
+    "vdd",
+    "vin",
+    "vo"
+  ],
+  "mixed_signal_flag": "False",
+  "subcircuits": [
+    {
+      "id": "bias_reference_mirror",
+      "netlist": ".subckt bias_reference_mirror iref_snk vdd\nM1 iref_snk iref_snk vdd vdd pmos l=l_cs_p w=w_cs_p*1 m=1 nf=1\n.ends bias_reference_mirror",
+      "ports": [
+        "iref_snk",
+        "vdd"
+      ],
+      "supply_ports": [
+        "vdd"
+      ],
+      "signal_ports": [
+        "iref_snk"
+      ],
+      "role_hint": "Diode-connected PMOS current reference generating gate bias node iref_snk",
+      "class_category": "Bias Network",
+      "is_analog": "True",
+      "is_digital": "False"
+    },
+    {
+      "id": "error_amplifier_input_stage",
+      "netlist": ".subckt error_amplifier_input_stage gnd vdd vin fb iref_snk net7 net6\nM4 net7 vin net5 vdd pmos l=l_eai_p w=w_eai_p*1 m=1 nf=1 sd=220.0n\nM3 net6 fb net5 vdd pmos l=l_eai_p w=w_eai_p*1 m=1 nf=1 sd=220.0n\nM2 net5 iref_snk vdd vdd pmos l=l_cs_p w=w_cs_p*1 m=1 nf=1\nM8 net6 net6 gnd gnd nmos l=l_eal_n w=w_eal_n*1 m=1 nf=1 sd=220.0n\nM7 net7 net6 gnd gnd nmos l=l_eal_n w=w_eal_n*1 m=1 nf=1 sd=220.0n\n.ends error_amplifier_input_stage",
+      "ports": [
+        "gnd",
+        "vdd",
+        "vin",
+        "fb",
+        "iref_snk",
+        "net7",
+        "net6"
+      ],
+      "supply_ports": [
+        "gnd",
+        "vdd"
+      ],
+      "signal_ports": [
+        "vin",
+        "fb",
+        "iref_snk",
+        "net7",
+        "net6"
+      ],
+      "role_hint": "Differential input error amplifier stage with PMOS pair and NMOS mirror load",
+      "class_category": "Amplifier",
+      "is_analog": "True",
+      "is_digital": "False"
+    },
+    {
+      "id": "second_gain_stage",
+      "netlist": ".subckt second_gain_stage gnd vdd iref_snk net7 net2\nM6 gnd net7 net2 vdd pmos l=l_eab_p w=w_eab_p*1 m=1 nf=1 sd=220.0n\nM5 net2 iref_snk vdd vdd pmos l=l_cs_p w=w_cs_p*1 m=1 nf=1\n.ends second_gain_stage",
+      "ports": [
+        "gnd",
+        "vdd",
+        "iref_snk",
+        "net7",
+        "net2"
+      ],
+      "supply_ports": [
+        "gnd",
+        "vdd"
+      ],
+      "signal_ports": [
+        "iref_snk",
+        "net7",
+        "net2"
+      ],
+      "role_hint": "Second gain stage driving pass device gate, with current source load",
+      "class_category": "Amplifier",
+      "is_analog": "True",
+      "is_digital": "False"
+    },
+    {
+      "id": "pass_device_output_feedback",
+      "netlist": ".subckt pass_device_output_feedback gnd vdd net2 vo fb\nM0 vo net2 vdd vdd pmos l=l_power_p w=w_power_p*1 m=1 nf=1\nR1 vo fb res r1\nR2 fb gnd res r2\nCL vo GND cap cload\n.ends pass_device_output_feedback",
+      "ports": [
+        "gnd",
+        "vdd",
+        "net2",
+        "vo",
+        "fb"
+      ],
+      "supply_ports": [
+        "gnd",
+        "vdd"
+      ],
+      "signal_ports": [
+        "net2",
+        "vo",
+        "fb"
+      ],
+      "role_hint": "PMOS pass device, feedback resistor divider, and load capacitor",
+      "class_category": "Amplifier",
+      "is_analog": "True",
+      "is_digital": "False"
+    },
+    {
+      "id": "miller_compensation",
+      "netlist": ".subckt miller_compensation net7 vo\nR0 net1 vo res r0\nC0 net7 net1 cap c0\n.ends miller_compensation",
+      "ports": [
+        "net7",
+        "vo"
+      ],
+      "supply_ports": [],
+      "signal_ports": [
+        "net7",
+        "vo"
+      ],
+      "role_hint": "Miller compensation RC network between output and first-stage node for stability",
+      "class_category": "Miller Compensation",
+      "is_analog": "True",
+      "is_digital": "False"
+    }
+  ]
+}

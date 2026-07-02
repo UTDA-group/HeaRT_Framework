@@ -1,0 +1,206 @@
+{
+  "unique_name": "ldo_pmos_v1_auto",
+  "children": [
+    {
+      "unique_name": "bias_reference_mirror",
+      "children": [],
+      "netlist": ".subckt bias_reference_mirror iref_snk vdd\nM1 iref_snk iref_snk vdd vdd pmos l=l_cs_p w=w_cs_p*1 m=1 nf=1\n.ends bias_reference_mirror",
+      "signal_ports": [
+        "iref_snk"
+      ],
+      "supply_ports": [
+        "vdd"
+      ],
+      "role_hint": "Diode-connected PMOS current reference generating gate bias node iref_snk",
+      "is_analog": "True",
+      "is_digital": "False",
+      "role_description": "Diode-connected PMOS that converts the external sink current iref_snk into a gate-bias voltage, forming the master leg of a PMOS current mirror that sets tail/load currents throughout the LDO.",
+      "device_list": [
+        "M1"
+      ]
+    },
+    {
+      "unique_name": "LDO Regulation Loop",
+      "children": [
+        {
+          "unique_name": "Error Amplifier Chain",
+          "children": [
+            {
+              "unique_name": "error_amplifier_input_stage",
+              "children": [],
+              "netlist": ".subckt error_amplifier_input_stage gnd vdd vin fb iref_snk net7 net6\nM4 net7 vin net5 vdd pmos l=l_eai_p w=w_eai_p*1 m=1 nf=1 sd=220.0n\nM3 net6 fb net5 vdd pmos l=l_eai_p w=w_eai_p*1 m=1 nf=1 sd=220.0n\nM2 net5 iref_snk vdd vdd pmos l=l_cs_p w=w_cs_p*1 m=1 nf=1\nM8 net6 net6 gnd gnd nmos l=l_eal_n w=w_eal_n*1 m=1 nf=1 sd=220.0n\nM7 net7 net6 gnd gnd nmos l=l_eal_n w=w_eal_n*1 m=1 nf=1 sd=220.0n\n.ends error_amplifier_input_stage",
+              "signal_ports": [
+                "vin",
+                "fb",
+                "iref_snk",
+                "net7",
+                "net6"
+              ],
+              "supply_ports": [
+                "gnd",
+                "vdd"
+              ],
+              "role_hint": "Differential input error amplifier stage with PMOS pair and NMOS mirror load",
+              "is_analog": "True",
+              "is_digital": "False",
+              "role_description": "First-stage differential transconductance amplifier using a PMOS input pair (M3/M4) with a common current-source tail (M2) and an NMOS current-mirror load (M7/M8), converting the Vin\u2013fb error into a single-ended voltage at net7.",
+              "device_list": [
+                "M4",
+                "M3",
+                "M2",
+                "M8",
+                "M7"
+              ]
+            },
+            {
+              "unique_name": "second_gain_stage",
+              "children": [],
+              "netlist": ".subckt second_gain_stage gnd vdd iref_snk net7 net2\nM6 gnd net7 net2 vdd pmos l=l_eab_p w=w_eab_p*1 m=1 nf=1 sd=220.0n\nM5 net2 iref_snk vdd vdd pmos l=l_cs_p w=w_cs_p*1 m=1 nf=1\n.ends second_gain_stage",
+              "signal_ports": [
+                "iref_snk",
+                "net7",
+                "net2"
+              ],
+              "supply_ports": [
+                "gnd",
+                "vdd"
+              ],
+              "role_hint": "Second gain stage driving pass device gate, with current source load",
+              "is_analog": "True",
+              "is_digital": "False",
+              "role_description": "Common-source second gain stage (M6) loaded by a PMOS current source (M5) that amplifies the first-stage output net7 and produces the high-impedance drive node net2 for the pass transistor gate.",
+              "device_list": [
+                "M6",
+                "M5"
+              ]
+            }
+          ],
+          "netlist": ".subckt \"Error Amplifier Chain\" gnd vdd fb iref_snk net2 net7 vin\nM4 net7 vin net5 vdd pmos l=l_eai_p w=w_eai_p*1 m=1 nf=1 sd=220.0n\nM3 net6 fb net5 vdd pmos l=l_eai_p w=w_eai_p*1 m=1 nf=1 sd=220.0n\nM2 net5 iref_snk vdd vdd pmos l=l_cs_p w=w_cs_p*1 m=1 nf=1\nM8 net6 net6 gnd gnd nmos l=l_eal_n w=w_eal_n*1 m=1 nf=1 sd=220.0n\nM7 net7 net6 gnd gnd nmos l=l_eal_n w=w_eal_n*1 m=1 nf=1 sd=220.0n\nM6 gnd net7 net2 vdd pmos l=l_eab_p w=w_eab_p*1 m=1 nf=1 sd=220.0n\nM5 net2 iref_snk vdd vdd pmos l=l_cs_p w=w_cs_p*1 m=1 nf=1\n.ends \"Error Amplifier Chain\"",
+          "supply_ports": [
+            "gnd",
+            "vdd"
+          ],
+          "signal_ports": [
+            "fb",
+            "iref_snk",
+            "net2",
+            "net7",
+            "vin"
+          ],
+          "role_description": "Two-stage error amplifier that senses the difference between Vin and the feedback voltage fb and produces a high-gain control signal to drive the pass device gate, providing the loop gain needed for accurate regulation.",
+          "device_list": [
+            "M4",
+            "M3",
+            "M2",
+            "M8",
+            "M7",
+            "M6",
+            "M5"
+          ]
+        },
+        {
+          "unique_name": "pass_device_output_feedback",
+          "children": [],
+          "netlist": ".subckt pass_device_output_feedback gnd vdd net2 vo fb\nM0 vo net2 vdd vdd pmos l=l_power_p w=w_power_p*1 m=1 nf=1\nR1 vo fb res r1\nR2 fb gnd res r2\nCL vo GND cap cload\n.ends pass_device_output_feedback",
+          "signal_ports": [
+            "net2",
+            "vo",
+            "fb"
+          ],
+          "supply_ports": [
+            "gnd",
+            "vdd"
+          ],
+          "role_hint": "PMOS pass device, feedback resistor divider, and load capacitor",
+          "is_analog": "True",
+          "is_digital": "False",
+          "role_description": "Large PMOS pass transistor (M0) acting as the series regulating element, with an output resistive divider (R1/R2) generating the feedback voltage fb and a load capacitor (CL) for output stabilization and transient response.",
+          "device_list": [
+            "M0",
+            "R1",
+            "R2",
+            "CL"
+          ]
+        },
+        {
+          "unique_name": "miller_compensation",
+          "children": [],
+          "netlist": ".subckt miller_compensation net7 vo\nR0 net1 vo res r0\nC0 net7 net1 cap c0\n.ends miller_compensation",
+          "signal_ports": [
+            "net7",
+            "vo"
+          ],
+          "supply_ports": [],
+          "role_hint": "Miller compensation RC network between output and first-stage node for stability",
+          "is_analog": "True",
+          "is_digital": "False",
+          "role_description": "Series RC (R0/C0) Miller compensation network bridging the output Vo and the first-stage node net7 to introduce pole-splitting and a stabilizing zero, ensuring loop phase margin across load conditions.",
+          "device_list": [
+            "R0",
+            "C0"
+          ]
+        }
+      ],
+      "netlist": ".subckt \"LDO Regulation Loop\" gnd vdd iref_snk vin vo\nM4 net7 vin net5 vdd pmos l=l_eai_p w=w_eai_p*1 m=1 nf=1 sd=220.0n\nM3 net6 fb net5 vdd pmos l=l_eai_p w=w_eai_p*1 m=1 nf=1 sd=220.0n\nM2 net5 iref_snk vdd vdd pmos l=l_cs_p w=w_cs_p*1 m=1 nf=1\nM8 net6 net6 gnd gnd nmos l=l_eal_n w=w_eal_n*1 m=1 nf=1 sd=220.0n\nM7 net7 net6 gnd gnd nmos l=l_eal_n w=w_eal_n*1 m=1 nf=1 sd=220.0n\nM6 gnd net7 net2 vdd pmos l=l_eab_p w=w_eab_p*1 m=1 nf=1 sd=220.0n\nM5 net2 iref_snk vdd vdd pmos l=l_cs_p w=w_cs_p*1 m=1 nf=1\nM0 vo net2 vdd vdd pmos l=l_power_p w=w_power_p*1 m=1 nf=1\nR1 vo fb res r1\nR2 fb gnd res r2\nCL vo GND cap cload\nR0 net1 vo res r0\nC0 net7 net1 cap c0\n.ends \"LDO Regulation Loop\"",
+      "supply_ports": [
+        "gnd",
+        "vdd"
+      ],
+      "signal_ports": [
+        "iref_snk",
+        "vin",
+        "vo"
+      ],
+      "role_description": "Core feedback regulation loop comprising the error amplifier chain, PMOS pass device with resistive feedback divider, and Miller compensation, which together regulate Vo by comparing the divided output against the reference input Vin.",
+      "device_list": [
+        "M4",
+        "M3",
+        "M2",
+        "M8",
+        "M7",
+        "M6",
+        "M5",
+        "M0",
+        "R1",
+        "R2",
+        "CL",
+        "R0",
+        "C0"
+      ]
+    }
+  ],
+  "port_names": [
+    "gnd",
+    "iref_snk",
+    "vdd",
+    "vin",
+    "vo"
+  ],
+  "netlist": ".subckt \"ldo_pmos_v1_auto\" gnd vdd iref_snk vin vo\nM1 iref_snk iref_snk vdd vdd pmos l=l_cs_p w=w_cs_p*1 m=1 nf=1\nM4 net7 vin net5 vdd pmos l=l_eai_p w=w_eai_p*1 m=1 nf=1 sd=220.0n\nM3 net6 fb net5 vdd pmos l=l_eai_p w=w_eai_p*1 m=1 nf=1 sd=220.0n\nM2 net5 iref_snk vdd vdd pmos l=l_cs_p w=w_cs_p*1 m=1 nf=1\nM8 net6 net6 gnd gnd nmos l=l_eal_n w=w_eal_n*1 m=1 nf=1 sd=220.0n\nM7 net7 net6 gnd gnd nmos l=l_eal_n w=w_eal_n*1 m=1 nf=1 sd=220.0n\nM6 gnd net7 net2 vdd pmos l=l_eab_p w=w_eab_p*1 m=1 nf=1 sd=220.0n\nM5 net2 iref_snk vdd vdd pmos l=l_cs_p w=w_cs_p*1 m=1 nf=1\nM0 vo net2 vdd vdd pmos l=l_power_p w=w_power_p*1 m=1 nf=1\nR1 vo fb res r1\nR2 fb gnd res r2\nCL vo GND cap cload\nR0 net1 vo res r0\nC0 net7 net1 cap c0\n.ends \"ldo_pmos_v1_auto\"",
+  "supply_ports": [
+    "gnd",
+    "vdd"
+  ],
+  "signal_ports": [
+    "iref_snk",
+    "vin",
+    "vo"
+  ],
+  "role_description": "PMOS-pass-device Low-Dropout (LDO) Voltage Regulator that converts an unregulated VDD into a stable regulated output Vo, using a two-stage error amplifier driving a PMOS power transistor in a negative feedback loop with resistive feedback and Miller compensation.",
+  "device_list": [
+    "M1",
+    "M4",
+    "M3",
+    "M2",
+    "M8",
+    "M7",
+    "M6",
+    "M5",
+    "M0",
+    "R1",
+    "R2",
+    "CL",
+    "R0",
+    "C0"
+  ]
+}
